@@ -1,0 +1,30 @@
+{
+  "name": "rpg-discord-bot",
+  "version": "1.0.0",
+  "description": "A comprehensive Discord bot for D&D 5e and RPG management",
+  "main": "main.py",
+  "scripts": {
+    "start": "python main.py",
+    "dev": "python main.py",
+    "install": "pip install -r requirements.txt"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "dnd",
+    "dice",
+    "music",
+    "rpg",
+    "5e"
+  ],
+  "author": "RPG Bot Team",
+  "license": "MIT",
+  "dependencies": {
+    "discord.py": "^2.6.0",
+    "yt-dlp": "^2025.9.5",
+    "spotipy": "^2.25.0",
+    "python-dotenv": "^1.1.0",
+    "beautifulsoup4": "^4.13.0",
+    "pandas": "^2.3.0"
+  }
+}

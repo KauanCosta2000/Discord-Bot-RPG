@@ -1,0 +1,42 @@
+2025-09-19 04:05:43,583 - discord.client - INFO - logging in using static token
+2025-09-19 04:05:43,583 - __main__ - ERROR - Bot crashed: expected token to be a str, received NoneType instead
+2025-09-19 04:08:43,608 - discord.client - INFO - logging in using static token
+2025-09-19 04:08:44,156 - __main__ - ERROR - Failed to initialize database: name 'db' is not defined
+2025-09-19 04:08:44,396 - __main__ - ERROR - Failed to load extension cogs.music: Extension 'cogs.music' raised an error: ModuleNotFoundError: No module named 'soundcloud'
+2025-09-19 04:08:44,421 - __main__ - INFO - Loaded extension: cogs.dice
+2025-09-19 04:08:44,532 - __main__ - INFO - Loaded extension: cogs.dnd
+2025-09-19 04:08:44,558 - __main__ - ERROR - Failed to load extension cogs.campaign: Extension 'cogs.campaign' raised an error: ModuleNotFoundError: No module named 'aiosqlite'
+2025-09-19 04:08:44,568 - __main__ - INFO - Loaded extension: cogs.dm_tools
+2025-09-19 04:08:44,576 - __main__ - INFO - Loaded extension: cogs.admin
+2025-09-19 04:08:44,585 - __main__ - INFO - Loaded extension: cogs.help
+2025-09-19 04:08:44,979 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 554d5f7b6c8af57da342b36bdd0834c3).
+2025-09-19 04:08:46,992 - __main__ - INFO - Logged in as Museu de Hellus#6269 (ID: 1418324222475894936)
+2025-09-19 04:08:46,992 - __main__ - INFO - Connected to 1 guilds
+2025-09-19 04:08:49,755 - __main__ - INFO - Synced 26 slash commands
+2025-09-19 04:10:35,937 - discord.client - INFO - logging in using static token
+2025-09-19 04:10:36,510 - __main__ - ERROR - Failed to initialize database: name 'db' is not defined
+2025-09-19 04:10:36,716 - __main__ - ERROR - Failed to load extension cogs.music: Extension 'cogs.music' raised an error: ModuleNotFoundError: No module named 'soundcloud'
+2025-09-19 04:10:36,719 - __main__ - INFO - Loaded extension: cogs.dice
+2025-09-19 04:10:36,760 - __main__ - INFO - Loaded extension: cogs.dnd
+2025-09-19 04:10:36,762 - __main__ - ERROR - Failed to load extension cogs.campaign: Extension 'cogs.campaign' raised an error: ModuleNotFoundError: No module named 'aiosqlite'
+2025-09-19 04:10:36,762 - __main__ - INFO - Loaded extension: cogs.dm_tools
+2025-09-19 04:10:36,763 - __main__ - INFO - Loaded extension: cogs.admin
+2025-09-19 04:10:36,763 - __main__ - INFO - Loaded extension: cogs.help
+2025-09-19 04:10:37,178 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 9eb2f7fe1b70f6e7d7e65df7ec13abf3).
+2025-09-19 04:10:39,184 - __main__ - INFO - Logged in as Museu de Hellus#6269 (ID: 1418324222475894936)
+2025-09-19 04:10:39,184 - __main__ - INFO - Connected to 1 guilds
+2025-09-19 04:10:39,621 - __main__ - INFO - Synced 26 slash commands
+2025-09-19 04:16:15,626 - discord.client - INFO - logging in using static token
+2025-09-19 04:16:16,215 - __main__ - ERROR - Failed to initialize database: name 'db' is not defined
+2025-09-19 04:16:16,429 - __main__ - ERROR - Failed to load extension cogs.music: Extension 'cogs.music' raised an error: ModuleNotFoundError: No module named 'soundcloud'
+2025-09-19 04:16:16,432 - __main__ - INFO - Loaded extension: cogs.dice
+2025-09-19 04:16:16,475 - __main__ - INFO - Loaded extension: cogs.dnd
+2025-09-19 04:16:16,476 - __main__ - ERROR - Failed to load extension cogs.campaign: Extension 'cogs.campaign' raised an error: ModuleNotFoundError: No module named 'aiosqlite'
+2025-09-19 04:16:16,476 - __main__ - INFO - Loaded extension: cogs.dm_tools
+2025-09-19 04:16:16,477 - __main__ - INFO - Loaded extension: cogs.admin
+2025-09-19 04:16:16,477 - __main__ - INFO - Loaded extension: cogs.help
+2025-09-19 04:16:16,951 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 32281362339a68f3e284319c09a929bc).
+2025-09-19 04:16:18,956 - __main__ - INFO - Logged in as Museu de Hellus#6269 (ID: 1418324222475894936)
+2025-09-19 04:16:18,956 - __main__ - INFO - Connected to 1 guilds
+2025-09-19 04:16:19,254 - __main__ - INFO - Synced 26 slash commands
+2025-09-19 04:17:17,005 - discord.gateway - INFO - Shard ID None has successfully RESUMED session 32281362339a68f3e284319c09a929bc.
