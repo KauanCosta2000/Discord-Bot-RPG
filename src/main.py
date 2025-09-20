@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from config import Config
+from config.config import Config
 
 # Load environment variables
 load_dotenv()
@@ -42,13 +42,14 @@ class RPGBot(commands.Bot):
         
         self.config = Config
         self.initial_extensions = [
-            'cogs.music',
+            'cogs.audio.music',
             'cogs.dice',
             'cogs.dnd',
             'cogs.campaign',
             'cogs.dm_tools',
             'cogs.admin',
-            'cogs.help'
+            'cogs.help',
+            'cogs.example.example'
         ]
     
     async def setup_hook(self):
