@@ -43,7 +43,7 @@ class RPGBot(commands.Bot):
         self.config = Config
         self.initial_extensions = [
             'cogs.audio.music',
-            'cogs.dice',
+            'cogs.dnd.roll.dice',
             'cogs.dnd',
             'cogs.campaign',
             'cogs.dm_tools',

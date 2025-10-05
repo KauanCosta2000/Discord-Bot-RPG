@@ -201,15 +201,28 @@ class Music(commands.Cog):
     async def get_youtube_audio(self, url: str, volume: float = 1.0):
       """Get YouTube audio source with volume control"""
       try:
-          info = self.ytdl.extract_info(url, download=False)
-          url2 = info['formats'][0]['url']
-          audio_source = FFmpegOpusAudio(
-              info['url'],  # direto do yt_dlp
-              executable=Config.FFMPEG_EXECUTABLE,
-              options='-vn',
-              before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
-          )
-          return audio_source
+        print(f'Getting YouTube audio for URL: {url}')
+        info = self.ytdl.extract_info(url, download=False)
+
+        if 'url' in info:
+            stream_url = info['url']
+        else:
+            formats = info.get("formats", [])
+            audio_formats = [f for f in formats if f.get("acodec") != "none"]
+            if not audio_formats:
+                raise Exception("No audio formats available for this video")
+
+            print(f'audio_formats: {audio_formats}')
+            best_audio = max(audio_formats, key=lambda f: f.get("abr", 0) or 0)
+            stream_url = best_audio["url"]
+
+        audio_source = FFmpegOpusAudio(
+            stream_url,
+            executable=Config.FFMPEG_EXECUTABLE,
+            options='-vn',
+            before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
+        )
+        return audio_source
       except Exception as e:
           logger.error(f"Error extracting YouTube audio: {e}")
           raise
