@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 
 from config.config import Config
 
+# IMPORTANTE: Quando você criar o seu banco de dados, descomente a linha abaixo 
+# e ajuste o caminho de acordo com onde o seu arquivo 'db' estiver!
+# from database.db_manager import db 
+
 # Load environment variables
 load_dotenv()
 
@@ -41,25 +45,30 @@ class RPGBot(commands.Bot):
         )
         
         self.config = Config
+        
+        # Deixei apenas as extensões que realmente existem e estão funcionando.
+        # Quando você for criando os outros arquivos .py, basta descomentar aqui!
         self.initial_extensions = [
             'cogs.audio.music',
             'cogs.dnd.roll.dice',
-            'cogs.dnd',
-            'cogs.campaign',
-            'cogs.dm_tools',
-            'cogs.admin',
-            'cogs.help',
             'cogs.example.example'
+            # 'cogs.dnd',       # Removido: o Python achava que era arquivo, mas é uma pasta.
+            # 'cogs.campaign',  # Comentado até você criar o arquivo campaign.py
+            # 'cogs.dm_tools',  # Comentado até você criar o arquivo dm_tools.py
+            # 'cogs.admin',     # Comentado até você criar o arquivo admin.py
+            # 'cogs.help',      # Comentado até você criar o arquivo help.py
         ]
     
     async def setup_hook(self):
         """Load all cogs when bot starts"""
         # Initialize database
-        try:
-            await db.initialize()
-            logger.info("Database initialized successfully")
-        except Exception as e:
-            logger.error(f"Failed to initialize database: {e}")
+        # Comentei esse bloco temporariamente. Como o "db" não estava importado
+        # no topo do arquivo, o Python travava nesta linha dando o erro de "not defined".
+        # try:
+        #     await db.initialize()
+        #     logger.info("Database initialized successfully")
+        # except Exception as e:
+        #     logger.error(f"Failed to initialize database: {e}")
         
         # Load extensions
         for extension in self.initial_extensions:

@@ -1,14 +1,17 @@
 import asyncio
 import discord
 from discord.ext import commands
-from discord import FFmpegOpusAudio, app_commands
+from discord import app_commands
 import yt_dlp
-# import spotipy
-# from spotipy.oauth2 import SpotifyClientCredentials
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+import soundcloud
 import logging
-from typing import Optional
+import json
+from typing import Optional, Dict, Any
+import os
 
-from config.config import Config
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +46,6 @@ class MusicQueue:
         self.current_index = 0
     
     def next(self) -> Optional[Track]:
-        print( f'Current index before next: {self.current_index}' )
-        print( f'Tracks length: {len(self.tracks)}' )
-        print( f'Loop: {self.loop}, Shuffle: {self.shuffle}' )
         if not self.tracks:
             return None
         
@@ -55,11 +55,10 @@ class MusicQueue:
             import random
             self.current_index = random.randint(0, len(self.tracks) - 1)
         else:
-            if self.current_index + 1 > len(self.tracks):
-                return None
             self.current_index += 1
-
-        print( f'Current index after next: {self.current_index}' )
+            if self.current_index >= len(self.tracks):
+                return None
+        
         return self.tracks[self.current_index] if self.current_index < len(self.tracks) else None
     
     def previous(self) -> Optional[Track]:
@@ -106,8 +105,18 @@ class Music(commands.Cog):
             'no_warnings': True,
             'default_search': 'auto',
             'source_address': '0.0.0.0',
-            # 'cookiefile': 'cookies.txt'
         })
+        
+        # Spotify setup
+        if Config.SPOTIFY_CLIENT_ID and Config.SPOTIFY_CLIENT_SECRET:
+            self.spotify = spotipy.Spotify(
+                auth_manager=SpotifyClientCredentials(
+                    client_id=Config.SPOTIFY_CLIENT_ID,
+                    client_secret=Config.SPOTIFY_CLIENT_SECRET
+                )
+            )
+        else:
+            self.spotify = None
         
         # Ambient sounds library
         self.ambient_sounds = {
@@ -179,9 +188,13 @@ class Music(commands.Cog):
         try:
             # Get audio source
             if track.source == 'youtube':
-                audio_source = await self.get_youtube_audio(track.url, volume=guild_state.volume)
+                audio_source = await self.get_youtube_audio(track.url)
+            elif track.source == 'spotify':
+                audio_source = await self.get_spotify_audio(track.url)
+            elif track.source == 'soundcloud':
+                audio_source = await self.get_soundcloud_audio(track.url)
             else:
-                await interaction.followup.send("Unsupported audio source!")
+                await interaction.response.send_message("Unsupported audio source!")
                 return
             
             # Play audio
@@ -197,56 +210,65 @@ class Music(commands.Cog):
                 description=f"**{track.title}**\nRequested by: {track.requester.mention}",
                 color=discord.Color.green()
             )
-            await interaction.followup.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             
         except Exception as e:
             logger.error(f"Error playing track: {e}")
-            await interaction.followup.send(f"Error playing track: {str(e)}")
-
+            await interaction.response.send_message(f"Error playing track: {str(e)}")
     
-    async def get_youtube_audio(self, url: str, volume: float = 1.0):
-        """Get YouTube audio source with volume control"""
+    async def get_youtube_audio(self, url: str):
+        """Get YouTube audio source"""
         try:
-            print(f'Getting YouTube audio for URL: {url}')
-            # Executa a busca sem travar o bot
-            info = await self.bot.loop.run_in_executor(
-                None, lambda: self.ytdl.extract_info(url, download=False)
-            )
-
-            if 'url' in info:
-                stream_url = info['url']
-            else:
-                formats = info.get("formats", [])
-                audio_formats = [f for f in formats if f.get("acodec") != "none"]
-                if not audio_formats:
-                    raise Exception("No audio formats available for this video")
-
-                print(f'audio_formats: {audio_formats}')
-                best_audio = max(audio_formats, key=lambda f: f.get("abr", 0) or 0)
-                stream_url = best_audio["url"]
-
-            audio_source = discord.FFmpegOpusAudio(
-                stream_url,
-                executable=Config.FFMPEG_EXECUTABLE,
-                options='-vn',
-                before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -nostdin'
-            )
-            return audio_source
+            info = self.ytdl.extract_info(url, download=False)
+            url2 = info['formats'][0]['url']
+            return discord.FFmpegPCMAudio(url2, executable=Config.FFMPEG_EXECUTABLE)
         except Exception as e:
             logger.error(f"Error extracting YouTube audio: {e}")
+            raise
+    
+    async def get_spotify_audio(self, url: str):
+        """Get Spotify audio source (via YouTube search)"""
+        if not self.spotify:
+            raise ValueError("Spotify not configured")
+        
+        try:
+            # Extract track info from Spotify
+            track_id = url.split('/')[-1].split('?')[0]
+            track = self.spotify.track(track_id)
+            
+            # Search on YouTube
+            search_query = f"{track['artists'][0]['name']} {track['name']}"
+            info = self.ytdl.extract_info(f"ytsearch:{search_query}", download=False)
+            
+            if 'entries' in info and info['entries']:
+                url2 = info['entries'][0]['formats'][0]['url']
+                return discord.FFmpegPCMAudio(url2, executable=Config.FFMPEG_EXECUTABLE)
+            
+            raise ValueError("Could not find audio for Spotify track")
+            
+        except Exception as e:
+            logger.error(f"Error extracting Spotify audio: {e}")
+            raise
+    
+    async def get_soundcloud_audio(self, url: str):
+        """Get SoundCloud audio source"""
+        try:
+            info = self.ytdl.extract_info(url, download=False)
+            url2 = info['formats'][0]['url']
+            return discord.FFmpegPCMAudio(url2, executable=Config.FFMPEG_EXECUTABLE)
+        except Exception as e:
+            logger.error(f"Error extracting SoundCloud audio: {e}")
             raise
     
     async def play_next(self, interaction: discord.Interaction):
         """Play next track in queue"""
         guild_state = self.get_guild_state(interaction.guild_id)
         
-        print( f'Playing next track. Current index: {guild_state.queue.current_index}' )
         if guild_state.queue.is_empty():
             guild_state.now_playing = None
             return
-        next_track = guild_state.queue.next()
         
-        print( f'Next track: {next_track}' )
+        next_track = guild_state.queue.next()
         if next_track:
             await self.play_track(interaction, next_track)
     
@@ -254,14 +276,19 @@ class Music(commands.Cog):
     @app_commands.describe(query="Song name, URL, or search query")
     async def play(self, interaction: discord.Interaction, query: str):
         """Play music from various sources"""
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer()
         
         # Determine source and get track info
         track = None
         
         if 'youtube.com' in query or 'youtu.be' in query:
             track = await self.create_youtube_track(query, interaction.user)
+        elif 'spotify.com' in query:
+            track = await self.create_spotify_track(query, interaction.user)
+        elif 'soundcloud.com' in query:
+            track = await self.create_soundcloud_track(query, interaction.user)
         else:
+            # Search YouTube
             track = await self.search_youtube(query, interaction.user)
         
         if not track:
@@ -284,10 +311,7 @@ class Music(commands.Cog):
     async def create_youtube_track(self, url: str, requester: discord.Member) -> Track:
         """Create YouTube track object"""
         try:
-            # Executa a busca sem travar o bot
-            info = await self.bot.loop.run_in_executor(
-                None, lambda: self.ytdl.extract_info(url, download=False)
-            )
+            info = self.ytdl.extract_info(url, download=False)
             return Track(
                 title=info['title'],
                 url=url,
@@ -299,14 +323,44 @@ class Music(commands.Cog):
             logger.error(f"Error creating YouTube track: {e}")
             return None
     
+    async def create_spotify_track(self, url: str, requester: discord.Member) -> Track:
+        """Create Spotify track object"""
+        if not self.spotify:
+            return None
+        
+        try:
+            track_id = url.split('/')[-1].split('?')[0]
+            track = self.spotify.track(track_id)
+            return Track(
+                title=f"{track['artists'][0]['name']} - {track['name']}",
+                url=url,
+                duration=track['duration_ms'] // 1000,
+                source='spotify',
+                requester=requester
+            )
+        except Exception as e:
+            logger.error(f"Error creating Spotify track: {e}")
+            return None
+    
+    async def create_soundcloud_track(self, url: str, requester: discord.Member) -> Track:
+        """Create SoundCloud track object"""
+        try:
+            info = self.ytdl.extract_info(url, download=False)
+            return Track(
+                title=info['title'],
+                url=url,
+                duration=info.get('duration', 0),
+                source='soundcloud',
+                requester=requester
+            )
+        except Exception as e:
+            logger.error(f"Error creating SoundCloud track: {e}")
+            return None
     
     async def search_youtube(self, query: str, requester: discord.Member) -> Track:
         """Search YouTube and return first result"""
         try:
-            # Executa a busca sem travar o bot
-            info = await self.bot.loop.run_in_executor(
-                None, lambda: self.ytdl.extract_info(f"ytsearch:{query}", download=False)
-            )
+            info = self.ytdl.extract_info(f"ytsearch:{query}", download=False)
             if 'entries' in info and info['entries']:
                 entry = info['entries'][0]
                 return Track(
@@ -348,7 +402,7 @@ class Music(commands.Cog):
         guild_state = self.get_guild_state(interaction.guild_id)
         
         if guild_state.voice_client and guild_state.voice_client.is_playing():
-            await self.play_next(interaction)
+            guild_state.voice_client.stop()
             await interaction.response.send_message("⏭️ Skipped")
         else:
             await interaction.response.send_message("Nothing is playing!")
@@ -454,8 +508,8 @@ class Music(commands.Cog):
         
         track = await self.create_youtube_track(url, interaction.user)
         if track:
-            await self.play_track(interaction, track)
-
+            await self.play(interaction, url)
+    
     @app_commands.command(name="leave", description="Leave voice channel")
     async def leave(self, interaction: discord.Interaction):
         """Leave voice channel"""

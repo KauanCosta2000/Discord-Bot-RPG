@@ -14,7 +14,8 @@ class Config:
     SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
     
     # Audio
-    FFMPEG_EXECUTABLE = os.getenv('FFMPEG_EXECUTABLE', 'ffmpeg')
+    FFMPEG_EXECUTABLE = "C:/Users/alaska10/Documents/ffmpeg/bin/ffmpeg.exe"
+    # FFMPEG_EXECUTABLE = os.getenv('FFMPEG_EXECUTABLE', 'ffmpeg')
     DEFAULT_VOLUME = float(os.getenv('DEFAULT_VOLUME', 0.5))
     
     # Database
